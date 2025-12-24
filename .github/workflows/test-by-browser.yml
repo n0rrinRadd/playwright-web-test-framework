@@ -82,7 +82,8 @@ jobs:
           node-version: 20
 
       - name: 📦 Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline
+        timeout-minutes: 5
 
       - name: 🌐 Install Chromium
         run: npx playwright install --with-deps chromium
@@ -119,7 +120,8 @@ jobs:
           node-version: 20
 
       - name: 📦 Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline
+        timeout-minutes: 5
 
       - name: 🌐 Install Firefox
         run: npx playwright install --with-deps firefox
@@ -156,7 +158,8 @@ jobs:
           node-version: 20
 
       - name: 📦 Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline
+        timeout-minutes: 5
 
       - name: 🌐 Install WebKit
         run: npx playwright install --with-deps webkit
@@ -193,7 +196,8 @@ jobs:
           node-version: 20
 
       - name: 📦 Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline
+        timeout-minutes: 5
 
       - name: 🌐 Install Edge
         run: npx playwright install --with-deps msedge
@@ -230,7 +234,8 @@ jobs:
           node-version: 20
 
       - name: 📦 Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline
+        timeout-minutes: 5
 
       - name: 🌐 Install Chromium
         run: npx playwright install --with-deps chromium
@@ -267,7 +272,8 @@ jobs:
           node-version: 20
 
       - name: 📦 Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline
+        timeout-minutes: 5
 
       - name: 🌐 Install WebKit
         run: npx playwright install --with-deps webkit
