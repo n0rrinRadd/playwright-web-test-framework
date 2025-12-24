@@ -1,0 +1,17 @@
+name: Nightly Tests - Mobile Safari
+
+on:
+  schedule:
+    # Run nightly at 6:00 AM EST (11:00 AM UTC)
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+
+jobs:
+  test-mobile-safari:
+    # 🌙 Nightly Mobile Safari Tests
+    # Runs automated tests against Mobile Safari (iPhone 12 viewport)
+    # Schedule: Daily at 6:00 AM EST (11:00 AM UTC)
+    uses: ./.github/workflows/test-by-browser.yml
+    with:
+      browser: mobile-safari
+    secrets: inherit

@@ -1,0 +1,17 @@
+name: Run Web App Tests On PR (Chrome Browser)
+
+on:
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  test-pr:
+    # 🔍 Pull Request Tests
+    # This job runs on every PR to main/develop branches
+    # Only tests against Chromium for faster feedback
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/test-by-browser.yml
+    with:
+      browser: chromium
+    secrets: inherit

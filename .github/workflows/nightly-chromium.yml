@@ -1,0 +1,17 @@
+name: Nightly Tests - Chromium
+
+on:
+  schedule:
+    # Run nightly at 1:00 AM EST (6:00 AM UTC)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  test-chromium:
+    # 🌙 Nightly Chromium Tests
+    # Runs automated tests against Chromium browser
+    # Schedule: Daily at 1:00 AM EST (6:00 AM UTC)
+    uses: ./.github/workflows/test-by-browser.yml
+    with:
+      browser: chromium
+    secrets: inherit

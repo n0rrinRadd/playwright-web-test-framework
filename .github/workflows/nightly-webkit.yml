@@ -1,0 +1,17 @@
+name: Nightly Tests - Safari (WebKit)
+
+on:
+  schedule:
+    # Run nightly at 3:00 AM EST (8:00 AM UTC)
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+jobs:
+  test-webkit:
+    # 🌙 Nightly Safari/WebKit Tests
+    # Runs automated tests against WebKit browser (Safari)
+    # Schedule: Daily at 3:00 AM EST (8:00 AM UTC)
+    uses: ./.github/workflows/test-by-browser.yml
+    with:
+      browser: webkit
+    secrets: inherit

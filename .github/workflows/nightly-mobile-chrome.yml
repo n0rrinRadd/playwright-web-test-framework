@@ -1,0 +1,17 @@
+name: Nightly Tests - Mobile Chrome
+
+on:
+  schedule:
+    # Run nightly at 5:00 AM EST (10:00 AM UTC)
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  test-mobile-chrome:
+    # 🌙 Nightly Mobile Chrome Tests
+    # Runs automated tests against Mobile Chrome (Pixel 5 viewport)
+    # Schedule: Daily at 5:00 AM EST (10:00 AM UTC)
+    uses: ./.github/workflows/test-by-browser.yml
+    with:
+      browser: mobile-chrome
+    secrets: inherit

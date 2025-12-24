@@ -1,0 +1,17 @@
+name: Nightly Tests - Microsoft Edge
+
+on:
+  schedule:
+    # Run nightly at 4:00 AM EST (9:00 AM UTC)
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+jobs:
+  test-edge:
+    # 🌙 Nightly Microsoft Edge Tests
+    # Runs automated tests against Microsoft Edge browser
+    # Schedule: Daily at 4:00 AM EST (9:00 AM UTC)
+    uses: ./.github/workflows/test-by-browser.yml
+    with:
+      browser: edge
+    secrets: inherit
