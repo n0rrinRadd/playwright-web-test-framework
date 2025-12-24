@@ -46,19 +46,12 @@ on:
         type: string
 
 env:
-  BASE_URL: ${{ vars.BASE_URL }}
-  AUTH_URL: ${{ vars.AUTH_URL }}
-  OWNER_USERNAME: ${{ secrets.OWNER_USERNAME }}
-  OWNER_PASSWORD: ${{ secrets.OWNER_PASSWORD }}
-  ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
-  ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-  STAFF_USERNAME: ${{ secrets.STAFF_USERNAME }}
-  STAFF_PASSWORD: ${{ secrets.STAFF_PASSWORD }}
+  BASE_URL: ${{ vars.BASE_URL || 'https://www.nytimes.com/games/wordle/index.html' }}
 
 jobs:
   validate-input:
     name: ✅ Validate Input
-    runs-on: sdet
+    runs-on: ubuntu-latest
     steps:
       - name: Check if at least one browser is selected
         run: |
@@ -80,7 +73,7 @@ jobs:
     if: ${{ inputs.chromium == true || inputs.all == true || inputs.browser == 'chromium' || inputs.browser == 'all' }}
     needs: validate-input
     timeout-minutes: 60
-    runs-on: sdet
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -88,45 +81,15 @@ jobs:
         with:
           node-version: 20
 
-      - name: � Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: �📦 Install dependencies
+      - name: 📦 Install dependencies
         run: npm ci
-        timeout-minutes: 10
-        env:
-          NPM_CONFIG_FETCH_TIMEOUT: 300000
-          NPM_CONFIG_FETCH_RETRIES: 3
-          NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 10000
-          NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 60000
-
-      - name: 💾 Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
       - name: 🌐 Install Chromium
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
-
-      - name: 🔧 Install system dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
 
       - name: 🎭 Run Chromium tests
         id: run-tests
         run: npm run test:chrome
-
-      - name: 📊 Generate Test Summary
-        if: always()
-        run: bash .github/scripts/generate-test-summary.sh "Chromium" "🎭"
 
       - uses: actions/upload-artifact@v4
         if: ${{ always() && steps.run-tests.outcome == 'failure' && hashFiles('playwright-report/**') != '' }}
@@ -147,35 +110,16 @@ jobs:
     if: ${{ (always() && inputs.all == true) || inputs.firefox == true || inputs.browser == 'firefox' || (always() && inputs.browser == 'all') }}
     needs: [validate-input, test-chromium]
     timeout-minutes: 60
-    runs-on: sdet
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: 💾 Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: 📦 Install dependencies
-        run: npm ci --prefer-offline --no-audit
-        timeout-minutes: 10
-        env:
-          NPM_CONFIG_FETCH_TIMEOUT: 300000
-          NPM_CONFIG_FETCH_RETRIES: 3
-          NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 10000
-          NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 60000
 
-      - name: 💾 Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+      - name: 📦 Install dependencies
+        run: npm ci
 
       - name: 🌐 Install Firefox
         run: npx playwright install --with-deps firefox
@@ -183,10 +127,6 @@ jobs:
       - name: 🎭 Run Firefox tests
         id: run-tests
         run: npm run test:firefox
-
-      - name: 📊 Generate Test Summary
-        if: always()
-        run: bash .github/scripts/generate-test-summary.sh "Firefox" "🦊"
 
       - uses: actions/upload-artifact@v4
         if: ${{ always() && steps.run-tests.outcome == 'failure' && hashFiles('playwright-report/**') != '' }}
@@ -207,7 +147,7 @@ jobs:
     if: ${{ (always() && inputs.all == true) || inputs.webkit == true || inputs.browser == 'webkit' || (always() && inputs.browser == 'all') }}
     needs: [validate-input, test-firefox]
     timeout-minutes: 60
-    runs-on: sdet
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -215,29 +155,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: 💾 Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       - name: 📦 Install dependencies
-        run: npm ci --prefer-offline --no-audit
-        timeout-minutes: 10
-        env:
-          NPM_CONFIG_FETCH_TIMEOUT: 300000
-          NPM_CONFIG_FETCH_RETRIES: 3
-          NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 10000
-          NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 60000
-
-      - name: 💾 Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+        run: npm ci
 
       - name: 🌐 Install WebKit
         run: npx playwright install --with-deps webkit
@@ -245,10 +164,6 @@ jobs:
       - name: 🎭 Run WebKit tests
         id: run-tests
         run: npm run test:safari
-
-      - name: 📊 Generate Test Summary
-        if: always()
-        run: bash .github/scripts/generate-test-summary.sh "WebKit" "🧭"
 
       - uses: actions/upload-artifact@v4
         if: ${{ always() && steps.run-tests.outcome == 'failure' && hashFiles('playwright-report/**') != '' }}
@@ -269,7 +184,7 @@ jobs:
     if: ${{ (always() && inputs.all == true) || inputs.edge == true || inputs.browser == 'edge' || (always() && inputs.browser == 'all') }}
     needs: [validate-input, test-webkit]
     timeout-minutes: 60
-    runs-on: sdet
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -277,33 +192,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: 💾 Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: 🧹 Clean npm cache
-        run: npm cache verify
-
       - name: 📦 Install dependencies
-        run: |
-          npm ci --prefer-offline --no-audit --verbose 2>&1 | tee npm-install.log || npm install --prefer-offline --no-audit
-        timeout-minutes: 15
-        env:
-          NPM_CONFIG_FETCH_TIMEOUT: 300000
-          NPM_CONFIG_FETCH_RETRIES: 5
-          NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 10000
-          NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 60000
-
-      - name: 💾 Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+        run: npm ci
 
       - name: 🌐 Install Edge
         run: npx playwright install --with-deps msedge
@@ -311,10 +201,6 @@ jobs:
       - name: 🎭 Run Edge tests
         id: run-tests
         run: npm run test:edge
-
-      - name: 📊 Generate Test Summary
-        if: always()
-        run: bash .github/scripts/generate-test-summary.sh "Edge" "🔷"
 
       - uses: actions/upload-artifact@v4
         if: ${{ always() && steps.run-tests.outcome == 'failure' && hashFiles('playwright-report/**') != '' }}
@@ -335,7 +221,7 @@ jobs:
     if: ${{ (always() && inputs.all == true) || inputs.mobile-chrome == true || inputs.browser == 'mobile-chrome' || (always() && inputs.browser == 'all') }}
     needs: [validate-input, test-edge]
     timeout-minutes: 60
-    runs-on: sdet
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -343,29 +229,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: � Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: �📦 Install dependencies
-        run: npm ci --prefer-offline --no-audit
-        timeout-minutes: 10
-        env:
-          NPM_CONFIG_FETCH_TIMEOUT: 300000
-          NPM_CONFIG_FETCH_RETRIES: 3
-          NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 10000
-          NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 60000
-
-      - name: 💾 Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+      - name: 📦 Install dependencies
+        run: npm ci
 
       - name: 🌐 Install Chromium
         run: npx playwright install --with-deps chromium
@@ -373,10 +238,6 @@ jobs:
       - name: 🎭 Run Mobile Chrome tests
         id: run-tests
         run: npm run test:mobile-chrome
-
-      - name: 📊 Generate Test Summary
-        if: always()
-        run: bash .github/scripts/generate-test-summary.sh "Mobile Chrome" "📱"
 
       - uses: actions/upload-artifact@v4
         if: ${{ always() && steps.run-tests.outcome == 'failure' && hashFiles('playwright-report/**') != '' }}
@@ -397,7 +258,7 @@ jobs:
     if: ${{ (always() && inputs.all == true) || inputs.mobile-safari == true || inputs.browser == 'mobile-safari' || (always() && inputs.browser == 'all') }}
     needs: [validate-input, test-mobile-chrome]
     timeout-minutes: 60
-    runs-on: sdet
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -405,29 +266,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: � Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: �📦 Install dependencies
-        run: npm ci --prefer-offline --no-audit
-        timeout-minutes: 10
-        env:
-          NPM_CONFIG_FETCH_TIMEOUT: 300000
-          NPM_CONFIG_FETCH_RETRIES: 3
-          NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 10000
-          NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 60000
-
-      - name: 💾 Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+      - name: 📦 Install dependencies
+        run: npm ci
 
       - name: 🌐 Install WebKit
         run: npx playwright install --with-deps webkit
@@ -435,10 +275,6 @@ jobs:
       - name: 🎭 Run Mobile Safari tests
         id: run-tests
         run: npm run test:mobile-safari
-
-      - name: 📊 Generate Test Summary
-        if: always()
-        run: bash .github/scripts/generate-test-summary.sh "Mobile Safari" "📱"
 
       - uses: actions/upload-artifact@v4
         if: ${{ always() && steps.run-tests.outcome == 'failure' && hashFiles('playwright-report/**') != '' }}
