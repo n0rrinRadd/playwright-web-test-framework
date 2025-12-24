@@ -387,4 +387,3 @@ The `playwright.config.ts` includes:
 
 **Happy Testing! 🎭**
 
-# playwright-web-test-framework
